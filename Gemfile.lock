@@ -1,7 +1,10 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    airbrake-ruby (6.1.2)
+      rbtree3 (~> 0.5)
     connection_pool (2.2.5)
+    rbtree3 (0.7.0)
     redis (5.0.2)
       redis-client (~> 0.7)
     redis-client (0.7.1)
@@ -12,6 +15,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  airbrake-ruby
   redis
 
 RUBY VERSION
