@@ -12,13 +12,6 @@ Airbrake.configure do |c|
   c.project_key = ENV['AIRBRAKE_API_KEY']
 end
 
-# Test Production Airbrake
-begin
-  1/0
-rescue ZeroDivisionError => ex
-  Airbrake.notify(ex)
-end
-
 # Mailgun Integration
 def send_notification(message)
 	uri = URI.parse("https://api.mailgun.net/v2/#{ENV['MAILGUN_DOMAIN']}/messages")
