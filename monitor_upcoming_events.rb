@@ -46,7 +46,6 @@ end
 # Warhorn Query
 def warhorn_upcoming_events
 	start_date = Date.today
-	# start_date = Date.today.prev_day
 	end_date = start_date + 60
 	uri = URI('https://warhorn.net/api/event-session-listings')
 	params = {
