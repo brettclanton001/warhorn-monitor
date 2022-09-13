@@ -1,5 +1,5 @@
 require 'net/http'
-require 'net/https'  
+require 'net/https'
 require 'uri'
 require 'json'
 require 'date'
@@ -16,7 +16,7 @@ end
 def send_notification(message)
 	uri = URI.parse("https://api.mailgun.net/v2/#{ENV['MAILGUN_DOMAIN']}/messages")
 	data = {
-		'to': ENV['NOTIFICATION_EMAIL'],  
+		'to': ENV['NOTIFICATION_EMAIL'],
 	    'from': [
 	    	'robot',
 	    	ENV['MAILGUN_DOMAIN']
@@ -24,10 +24,10 @@ def send_notification(message)
 	    'subject': 'Warhorn Monitor Notification',
 	    'text': message
 	}
-	http = Net::HTTP.new(uri.host, uri.port)  
+	http = Net::HTTP.new(uri.host, uri.port)
 	http.use_ssl = true
-	request = Net::HTTP::Post.new(uri.request_uri)  
-	request.basic_auth("api", ENV['MAILGUN_API_KEY'])  
+	request = Net::HTTP::Post.new(uri.request_uri)
+	request.basic_auth("api", ENV['MAILGUN_API_KEY'])
 	request.set_form_data(data)
 	response = http.request(request)
 end
@@ -36,7 +36,7 @@ end
 def create_key_and_notify(uuid)
 	redis = Redis.new(url: ENV['REDIS_URL'])
 	unless redis.exists(uuid) == 1
-		link = "https://warhorn.net/events/dd-al-the-wyverns-tale/schedule/sessions/#{uuid}"
+		link = "https://warhorn.net/events/#{ENV['WARHORN_EVENT']}/schedule/sessions/#{uuid}"
 		message = "New event found: #{link}"
 		send_notification(message)
 		redis.set(uuid, Time.now)
@@ -49,7 +49,7 @@ def warhorn_upcoming_events
 	end_date = start_date + 60
 	uri = URI('https://warhorn.net/api/event-session-listings')
 	params = {
-		"filter[eventId]": 7299,
+		"filter[eventId]": ENV['WARHORN_EVENT_ID'],
 		"filter[status]": %w(
 			canceled
 			published
