@@ -6,6 +6,12 @@ require 'date'
 require 'redis'
 require 'airbrake-ruby'
 
+def logger(message)
+  puts message
+end
+
+logger 'Script Starting'
+
 def fetch_env(name)
   raise "#{name} not found" unless ENV[name]
   ENV[name]
@@ -50,10 +56,13 @@ end
 def create_key_and_notify(uuid)
   redis = Redis.new(url: REDIS_URL)
   unless redis.exists(uuid) == 1
-  link = "https://warhorn.net/events/#{WARHORN_EVENT}/schedule/sessions/#{uuid}"
-  message = "New event found: #{link}"
-  send_notification(message)
-  redis.set(uuid, Time.now)
+    logger 'processing new event..'
+    link = "https://warhorn.net/events/#{WARHORN_EVENT}/schedule/sessions/#{uuid}"
+    message = "New event found: #{link}"
+    send_notification(message)
+    redis.set(uuid, Time.now)
+  else
+    logger 'event already processed'
   end
 end
 
@@ -89,5 +98,6 @@ end
 
 # Main Script
 warhorn_upcoming_events["data"].each do |event|
+  logger "event #{event["attributes"]["uuid"]} found"
   create_key_and_notify(event["attributes"]["uuid"])
 end
