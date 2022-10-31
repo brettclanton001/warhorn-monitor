@@ -97,7 +97,9 @@ def warhorn_upcoming_events
 end
 
 # Main Script
-warhorn_upcoming_events["data"].each do |event|
+data = warhorn_upcoming_events["data"]
+logger "#{data.count} events found"
+data.each do |event|
   logger "event #{event["attributes"]["uuid"]} found"
   create_key_and_notify(event["attributes"]["uuid"])
 end
