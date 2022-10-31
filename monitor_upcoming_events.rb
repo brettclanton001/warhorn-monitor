@@ -6,20 +6,34 @@ require 'date'
 require 'redis'
 require 'airbrake-ruby'
 
+def fetch_env(name)
+  raise "#{name} not found" unless ENV[name]
+  ENV[name]
+end
+
+AIRBRAKE_PROJECT_ID = fetch_env('AIRBRAKE_PROJECT_ID').freeze
+AIRBRAKE_API_KEY = fetch_env('AIRBRAKE_API_KEY').freeze
+NOTIFICATION_EMAIL = fetch_env('NOTIFICATION_EMAIL').freeze
+MAILGUN_DOMAIN = fetch_env('MAILGUN_DOMAIN').freeze
+MAILGUN_API_KEY = fetch_env('MAILGUN_API_KEY').freeze
+REDIS_URL = fetch_env('REDIS_URL').freeze
+WARHORN_EVENT = fetch_env('WARHORN_EVENT').freeze
+WARHORN_EVENT_ID = fetch_env('WARHORN_EVENT_ID').freeze
+
 # Airbrake Error Monitoring
 Airbrake.configure do |c|
-  c.project_id = ENV['AIRBRAKE_PROJECT_ID']
-  c.project_key = ENV['AIRBRAKE_API_KEY']
+  c.project_id = AIRBRAKE_PROJECT_ID
+  c.project_key = AIRBRAKE_API_KEY
 end
 
 # Mailgun Integration
 def send_notification(message)
-  uri = URI.parse("https://api.mailgun.net/v2/#{ENV['MAILGUN_DOMAIN']}/messages")
+  uri = URI.parse("https://api.mailgun.net/v2/#{MAILGUN_DOMAIN}/messages")
   data = {
-    'to': ENV['NOTIFICATION_EMAIL'],
+    'to': NOTIFICATION_EMAIL,
     'from': [
       'robot',
-      ENV['MAILGUN_DOMAIN']
+      MAILGUN_DOMAIN
     ].join('@'),
     'subject': 'Warhorn Monitor Notification',
     'text': message
@@ -27,16 +41,16 @@ def send_notification(message)
   http = Net::HTTP.new(uri.host, uri.port)
   http.use_ssl = true
   request = Net::HTTP::Post.new(uri.request_uri)
-  request.basic_auth("api", ENV['MAILGUN_API_KEY'])
+  request.basic_auth("api", MAILGUN_API_KEY)
   request.set_form_data(data)
   response = http.request(request)
 end
 
 # Redis Integration
 def create_key_and_notify(uuid)
-  redis = Redis.new(url: ENV['REDIS_URL'])
+  redis = Redis.new(url: REDIS_URL)
   unless redis.exists(uuid) == 1
-  link = "https://warhorn.net/events/#{ENV['WARHORN_EVENT']}/schedule/sessions/#{uuid}"
+  link = "https://warhorn.net/events/#{WARHORN_EVENT}/schedule/sessions/#{uuid}"
   message = "New event found: #{link}"
   send_notification(message)
   redis.set(uuid, Time.now)
@@ -49,7 +63,7 @@ def warhorn_upcoming_events
   end_date = start_date + 60
   uri = URI('https://warhorn.net/api/event-session-listings')
   params = {
-    "filter[eventId]": ENV['WARHORN_EVENT_ID'],
+    "filter[eventId]": WARHORN_EVENT_ID,
     "filter[status]": %w(
       canceled
       published
