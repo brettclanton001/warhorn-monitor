@@ -49,7 +49,7 @@ def send_notification(message)
   request = Net::HTTP::Post.new(uri.request_uri)
   request.basic_auth("api", MAILGUN_API_KEY)
   request.set_form_data(data)
-  response = http.request(request)
+  http.request(request)
 end
 
 # Redis Integration
